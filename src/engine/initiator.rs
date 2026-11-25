@@ -27,8 +27,15 @@ use crate::analysis::source_domains_analyzer::SourceDomainsAnalyzer;
 // Import complex analyzers
 use crate::analysis::accessibility_analyzer::AccessibilityAnalyzer;
 use crate::analysis::best_practice_analyzer::BestPracticeAnalyzer;
+use crate::analysis::broken_assets_analyzer::BrokenAssetsAnalyzer;
+use crate::analysis::image_weight_analyzer::ImageWeightAnalyzer;
+use crate::analysis::mixed_content_analyzer::MixedContentAnalyzer;
+use crate::analysis::orphan_pages_analyzer::OrphanPagesAnalyzer;
+use crate::analysis::privacy_analyzer::PrivacyAnalyzer;
+use crate::analysis::render_blocking_analyzer::RenderBlockingAnalyzer;
 use crate::analysis::security_analyzer::SecurityAnalyzer;
 use crate::analysis::seo_opengraph_analyzer::SeoAndOpenGraphAnalyzer;
+use crate::analysis::sitemap_coverage_analyzer::SitemapCoverageAnalyzer;
 use crate::analysis::ssl_tls::SslTlsAnalyzer;
 use crate::analysis::technologies_analyzer::TechnologiesAnalyzer;
 
@@ -101,6 +108,13 @@ impl Initiator {
         // Register all analyzers in alphabetical order
         analysis_manager.register_analyzer(Box::new(AccessibilityAnalyzer::new()));
         analysis_manager.register_analyzer(Box::new(BestPracticeAnalyzer::new()));
+        analysis_manager.register_analyzer(Box::new(BrokenAssetsAnalyzer::new()));
+        analysis_manager.register_analyzer(Box::new(ImageWeightAnalyzer::new()));
+        analysis_manager.register_analyzer(Box::new(MixedContentAnalyzer::new()));
+        analysis_manager.register_analyzer(Box::new(OrphanPagesAnalyzer::new()));
+        analysis_manager.register_analyzer(Box::new(PrivacyAnalyzer::new()));
+        analysis_manager.register_analyzer(Box::new(RenderBlockingAnalyzer::new()));
+        analysis_manager.register_analyzer(Box::new(SitemapCoverageAnalyzer::new()));
 
         // Browser console diagnostics (active only in --browser mode)
         let mut browser_console = BrowserConsoleAnalyzer::new();
