@@ -1,5 +1,7 @@
 # SiteOne Crawler
 
+#Triii Technologies LLC Edition - www.triii.org/siteonecrawler
+
 SiteOne Crawler is a powerful and easy-to-use **website analyzer, cloner, and converter** designed for developers seeking security and performance insights, SEO specialists identifying optimization opportunities, and website owners needing reliable backups and offline versions.
 
 **Now rewritten in Rust** for maximum performance, minimal resource usage, and zero runtime dependencies. The transition from PHP+Swoole to Rust resulted in **25% faster execution** and **30% lower memory consumption** while producing identical output.
