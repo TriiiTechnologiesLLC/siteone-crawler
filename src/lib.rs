@@ -7,6 +7,7 @@ pub mod browser;
 pub mod components;
 pub mod content_processor;
 pub mod debugger;
+pub mod diff;
 pub mod engine;
 pub mod error;
 pub mod events;

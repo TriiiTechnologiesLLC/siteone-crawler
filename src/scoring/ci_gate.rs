@@ -468,6 +468,7 @@ mod tests {
             ci_max_score_drop: None,
             ci_fail_on_code: Vec::new(),
             ci_ignore_code: Vec::new(),
+            diff_previous: None,
             ci_junit_file: None,
             ci_github_annotations: false,
 

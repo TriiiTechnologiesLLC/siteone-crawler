@@ -261,6 +261,8 @@ pub struct CoreOptions {
     pub ci_max_score_drop: Option<f64>,
     pub ci_fail_on_code: Vec<String>,
     pub ci_ignore_code: Vec<String>,
+    /// Path to a previous JSON output to diff this run against (`--diff-previous`).
+    pub diff_previous: Option<String>,
     pub ci_junit_file: Option<String>,
     pub ci_github_annotations: bool,
 
@@ -572,6 +574,7 @@ impl CoreOptions {
             ci_max_score_drop: None,
             ci_fail_on_code: Vec::new(),
             ci_ignore_code: Vec::new(),
+            diff_previous: None,
             ci_junit_file: None,
             ci_github_annotations: false,
 
@@ -1985,6 +1988,11 @@ impl CoreOptions {
             "ciIgnoreCode" => {
                 if let Some(arr) = value.as_array() {
                     self.ci_ignore_code = arr.clone();
+                }
+            }
+            "diffPrevious" => {
+                if let Some(s) = value.as_str() {
+                    self.diff_previous = Some(s.to_string());
                 }
             }
             "ciJunitFile" => {
@@ -3581,6 +3589,18 @@ pub fn get_options() -> Options {
                 None,
             ),
             CrawlerOption::new(
+                "--diff-previous",
+                None,
+                "diffPrevious",
+                OptionType::File,
+                false,
+                "Path to a previous JSON report to diff this run against: reports new/fixed 404 pages, changed titles, new/fixed orphan pages and the score delta. Any regression (new 404, new orphan, or score drop) makes the run fail with a non-zero exit code.",
+                None,
+                true,
+                false,
+                None,
+            ),
+            CrawlerOption::new(
                 "--ci-fail-on-code",
                 None,
                 "ciFailOnCode",
@@ -4563,6 +4583,7 @@ mod tests {
             ci_max_score_drop: None,
             ci_fail_on_code: Vec::new(),
             ci_ignore_code: Vec::new(),
+            diff_previous: None,
             ci_junit_file: None,
             ci_github_annotations: false,
 
@@ -4716,7 +4737,7 @@ mod tests {
         let group = options.get_group(GROUP_CI_CD_SETTINGS);
         assert!(group.is_some());
         let group = group.unwrap();
-        assert_eq!(group.options.len(), 21);
+        assert_eq!(group.options.len(), 22);
     }
 
     // ---- Duration parsing tests ----
@@ -5207,7 +5228,7 @@ mod tests {
                 .values()
                 .map(|group| group.options.len())
                 .sum::<usize>(),
-            226
+            227
         );
     }
 

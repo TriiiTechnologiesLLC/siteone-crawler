@@ -286,6 +286,50 @@ fn score_seo(summary: &Summary, stats: &BasicStats) -> CategoryScore {
         );
     }
 
+    // Near-duplicate content groups (SimHash clustering) — a real ranking / crawl-budget issue.
+    per_url_deduct(
+        summary,
+        "content-duplicates",
+        0.4,
+        "near-duplicate content group(s)",
+        "Keep one page per group; 301-redirect or noindex the rest (or point rel=canonical at the keeper).",
+        &mut deductions,
+        &mut per_url_total,
+    );
+
+    // Thin content (too little visible text to rank on).
+    per_url_deduct(
+        summary,
+        "content-thin",
+        0.15,
+        "thin-content page(s)",
+        "Expand thin pages to at least ~100 visible words, or merge them into a related page.",
+        &mut deductions,
+        &mut per_url_total,
+    );
+
+    // Duplicate H1 headings across pages.
+    per_url_deduct(
+        summary,
+        "serp-h1-duplicate",
+        0.2,
+        "page(s) sharing a duplicate <h1>",
+        "Give each page a unique <h1> that reflects its own topic.",
+        &mut deductions,
+        &mut per_url_total,
+    );
+
+    // Title/H1 mismatch (stale template artifact).
+    per_url_deduct(
+        summary,
+        "serp-title-h1-mismatch",
+        0.1,
+        "page(s) with a title/H1 mismatch",
+        "Align the <title> and <h1> so they describe the same topic.",
+        &mut deductions,
+        &mut per_url_total,
+    );
+
     build_category("SEO", "seo", 0.20, deductions)
 }
 

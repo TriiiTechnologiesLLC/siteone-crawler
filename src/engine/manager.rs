@@ -8,6 +8,8 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use crate::analysis::manager::AnalysisManager;
+use crate::components::summary::item::Item;
+use crate::components::summary::item_status::ItemStatus;
 use crate::components::super_table::SuperTable;
 use crate::content_processor::astro_processor::AstroProcessor;
 use crate::content_processor::base_processor::{DomainAllowFn, ProcessorConfig, stored_url_lookup};
@@ -18,6 +20,7 @@ use crate::content_processor::manager::{ContentProcessorManager, SUPER_TABLE_CON
 use crate::content_processor::nextjs_processor::NextJsProcessor;
 use crate::content_processor::svelte_processor::SvelteProcessor;
 use crate::content_processor::xml_processor::XmlProcessor;
+use crate::diff::{RunFacts, compare};
 use crate::engine::crawler::{Crawler, compile_domain_patterns};
 use crate::engine::http_client::HttpClient;
 use crate::engine::parsed_url::ParsedUrl;
@@ -481,6 +484,7 @@ impl Manager {
 
         // Calculate and print quality scores, then CI gate, then summary
         let mut ci_exit_code = 0i32;
+        let mut diff_exit_code = 0i32;
         if let Ok(st) = status.lock() {
             let mut summary = st.get_summary();
             let basic_stats = st.get_basic_stats();
@@ -528,6 +532,65 @@ impl Manager {
                         } else {
                             println!("{}", line);
                         }
+                    }
+                }
+            }
+
+            // Run-over-run diff (--diff-previous): compare this run against the previous JSON
+            // report: new/fixed 404 pages, changed titles, new/fixed orphans, and the score
+            // delta. Any regression (new 404, new orphan, or a score drop) makes the run fail.
+            if let Some(prev_path) = &self.options.diff_previous {
+                match RunFacts::from_json_path(prev_path) {
+                    Some(prev_facts) => {
+                        let overall = quality_scores.overall.score;
+                        let cur_facts = RunFacts::from_status(&st, Some(overall));
+                        let report = compare(&prev_facts, &cur_facts);
+
+                        let mut diff_table = report.to_super_table();
+                        st.configure_super_table_url_stripping(&mut diff_table);
+                        if let Ok(mut out) = output.lock() {
+                            out.add_super_table(&diff_table);
+                        }
+                        st.add_super_table_at_beginning(diff_table);
+
+                        let regression = report.has_regression();
+                        let text = if regression {
+                            format!("Run-over-run diff: {} — regressions detected", report.summary_text())
+                        } else {
+                            format!("Run-over-run diff: {}", report.summary_text())
+                        };
+                        summary.add_item(Item::new(
+                            crate::diff::SUPER_TABLE_DIFF.to_string(),
+                            text.clone(),
+                            if regression {
+                                ItemStatus::Critical
+                            } else {
+                                ItemStatus::Ok
+                            },
+                        ));
+                        if regression {
+                            st.add_critical_to_summary(crate::diff::SUPER_TABLE_DIFF, &text);
+                            diff_exit_code = 11;
+                        } else {
+                            st.add_ok_to_summary(crate::diff::SUPER_TABLE_DIFF, &text);
+                        }
+                    }
+                    None => {
+                        eprintln!(
+                            "Error: could not read or parse the previous run report at '{}' \
+                             (expected a JSON report); skipping the run-over-run diff.",
+                            prev_path
+                        );
+                        let text = format!(
+                            "Could not read the previous run report at '{}'; diff skipped.",
+                            prev_path
+                        );
+                        summary.add_item(Item::new(
+                            crate::diff::SUPER_TABLE_DIFF.to_string(),
+                            text.clone(),
+                            ItemStatus::Warning,
+                        ));
+                        st.add_warning_to_summary(crate::diff::SUPER_TABLE_DIFF, &text);
                     }
                 }
             }
@@ -586,6 +649,8 @@ impl Manager {
             ci_exit_code
         } else if no_pages_crawled {
             3
+        } else if diff_exit_code != 0 {
+            diff_exit_code
         } else {
             0
         }

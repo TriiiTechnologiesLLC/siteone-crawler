@@ -17,10 +17,14 @@ pub mod skipped_urls_analyzer;
 pub mod slowest_analyzer;
 pub mod source_domains_analyzer;
 
+// Shared helpers for analyzers
+pub mod text_utils;
+
 // Complex analyzers (DOM parsing / TLS inspection)
 pub mod accessibility_analyzer;
 pub mod best_practice_analyzer;
 pub mod broken_assets_analyzer;
+pub mod duplicate_content_analyzer;
 pub mod image_weight_analyzer;
 pub mod mixed_content_analyzer;
 pub mod orphan_pages_analyzer;
@@ -28,6 +32,7 @@ pub mod privacy_analyzer;
 pub mod render_blocking_analyzer;
 pub mod security_analyzer;
 pub mod seo_opengraph_analyzer;
+pub mod serp_analyzer;
 pub mod sitemap_coverage_analyzer;
 pub mod ssl_tls;
 pub mod technologies_analyzer;

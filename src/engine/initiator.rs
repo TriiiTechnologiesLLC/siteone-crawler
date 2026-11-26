@@ -15,6 +15,7 @@ use crate::analysis::browser_console_analyzer::BrowserConsoleAnalyzer;
 use crate::analysis::caching_analyzer::CachingAnalyzer;
 use crate::analysis::content_type_analyzer::ContentTypeAnalyzer;
 use crate::analysis::dns_analyzer::DnsAnalyzer;
+use crate::analysis::duplicate_content_analyzer::DuplicateContentAnalyzer;
 use crate::analysis::external_links_analyzer::ExternalLinksAnalyzer;
 use crate::analysis::fastest_analyzer::FastestAnalyzer;
 use crate::analysis::headers_analyzer::HeadersAnalyzer;
@@ -35,6 +36,7 @@ use crate::analysis::privacy_analyzer::PrivacyAnalyzer;
 use crate::analysis::render_blocking_analyzer::RenderBlockingAnalyzer;
 use crate::analysis::security_analyzer::SecurityAnalyzer;
 use crate::analysis::seo_opengraph_analyzer::SeoAndOpenGraphAnalyzer;
+use crate::analysis::serp_analyzer::SerpAnalyzer;
 use crate::analysis::sitemap_coverage_analyzer::SitemapCoverageAnalyzer;
 use crate::analysis::ssl_tls::SslTlsAnalyzer;
 use crate::analysis::technologies_analyzer::TechnologiesAnalyzer;
@@ -124,6 +126,7 @@ impl Initiator {
         analysis_manager.register_analyzer(Box::new(CachingAnalyzer::new()));
         analysis_manager.register_analyzer(Box::new(ContentTypeAnalyzer::new()));
         analysis_manager.register_analyzer(Box::new(DnsAnalyzer::new()));
+        analysis_manager.register_analyzer(Box::new(DuplicateContentAnalyzer::new()));
         analysis_manager.register_analyzer(Box::new(ExternalLinksAnalyzer::new()));
 
         // FastestAnalyzer: pass fastest_top_limit and fastest_max_time from options
@@ -140,6 +143,9 @@ impl Initiator {
         let mut seo = SeoAndOpenGraphAnalyzer::new();
         seo.set_config(options.max_heading_level as i32);
         analysis_manager.register_analyzer(Box::new(seo));
+
+        // SerpAnalyzer: SERP preview + duplicate H1 + title/H1 mismatch (deterministic)
+        analysis_manager.register_analyzer(Box::new(SerpAnalyzer::new()));
 
         analysis_manager.register_analyzer(Box::new(SkippedUrlsAnalyzer::new()));
 
