@@ -1,6 +1,6 @@
 # SiteOne Crawler
 
-#Triii Technologies LLC Edition - www.triii.org/siteonecrawler
+# Triii Technologies LLC Edition - www.triii.org/siteonecrawler
 
 SiteOne Crawler is a powerful and easy-to-use **website analyzer, cloner, and converter** designed for developers seeking security and performance insights, SEO specialists identifying optimization opportunities, and website owners needing reliable backups and offline versions.
 
